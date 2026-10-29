@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inventário produção · impressão</title>
+<style>
+  body { margin:0; background:#ffffff; color:#000000; font:14px Arial, Helvetica, sans-serif; }
+  .aviso { margin:40px; font-weight:700; }
+  /* lista de conferência: tudo centralizado, como na planilha; a descrição quebra em vez de cortar */
+  /* "table." a mais: o a4.css vem depois e, com o mesmo peso, venceria */
+  /* só Arial, como na tela (Fernando, 28/10/2026): o a4.css usa Arial Narrow nas tabelas */
+  body table.a4-tab { font-family:Arial, Helvetica, sans-serif; font-stretch:normal; }
+  /* em Arial normal ARMAZÉM e CONTADO ocupam ~61 px: o respiro lateral do cabeçalho cai para 1 px */
+  body table.a4-tab thead th { padding:2px 1px; }
+  table.a4-tab td { text-align:center; }
+  table.a4-tab td.inv-descricao { white-space:normal; overflow:visible; text-overflow:clip; line-height:1.2; }
+  table.a4-tab tbody tr td.inv-so11 { background:#fff2cc; }
+  table.a4-tab td.inv-total { font-weight:700; }
+  .inv-conferente { flex:none; display:flex; justify-content:space-between; gap:16px; border:1px solid #000000; padding:8px; font-size:12px; font-weight:700; }
+  .inv-legenda { flex:none; font-size:12px; }
+</style>
+<link rel="stylesheet" href="a4.css?v=20261028b">
+<script src="a4.js?v=20261028b"></script>
+</head>
+<body>
+<p class="aviso">MONTANDO A IMPRESSÃO...</p>
+<script>
+  // Folhas A4 da tela INVENTÁRIO PRODUÇÃO do portal (src\features\stock\ProductionInventoryPage.jsx).
+  // Os dados vêm prontos da tela que abriu esta janela, já com o filtro de equipamento aplicado.
+  (function () {
+    var dados = null;
+    try { dados = window.opener && window.opener.__inventarioImpressao; } catch (erro) { dados = null; }
+    var aviso = document.querySelector('.aviso');
+    if (!dados) { aviso.textContent = 'ABRA ESTA IMPRESSÃO PELO BOTÃO IMPRIMIR DA TELA INVENTÁRIO PRODUÇÃO DO PORTAL.'; return; }
+    document.title = dados.titulo;
+
+    function div(classe, texto) { var e = document.createElement('div'); e.className = classe; e.textContent = texto; return e; }
+    function conferente() {
+      var e = div('inv-conferente', '');
+      e.append(div('', 'CONFERENTE: ______________________________'), div('', 'DATA: ____/____/______'));
+      return e;
+    }
+
+    window.addEventListener('load', function () {
+      aviso.remove();
+      A4.configurar({
+        titulo: dados.titulo,
+        carimbo: dados.carimbo,
+        logo: 'logo-consilos.png',
+        telaFolha: true,
+        montar: function (A4) {
+          return [
+            A4.kpis(dados.indicadores),
+            conferente(),
+            dados.legenda ? div('inv-legenda', dados.legenda) : null,
+            A4.tabela(dados.tabela),
+          ];
+        },
+      });
+      setTimeout(function () { A4.imprimir(); }, 300);
+    });
+  })();
+</script>
+</body>
+</html>

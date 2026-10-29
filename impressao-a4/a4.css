@@ -1,0 +1,112 @@
+/* CÓPIA de Desktop\painel-de-apps\assets\impressao-a4\a4.css em 28/10/2026 (portal, Inventário Produção). Corrigir na fonte e recopiar. */
+/* =============================================================================
+   Padrão Consilos de impressão: folha A4 em RETRATO (29/09/2026)
+   Regras completas: skill impressao-a4-retrato (.claude\skills e .agents\skills).
+
+   A folha não é a tela espremida. A página monta FOLHAS próprias (.a4-folha), cada
+   uma do tamanho exato da área útil do papel: 198 x 285 mm (margem estreita de 6 mm), que a
+   96 dpi são 748 x 1077 px. Na impressão só as folhas saem; na tela, a "prévia A4"
+   mostra as mesmas folhas, então o que se vê é o que imprime.
+   ============================================================================= */
+
+:root { --a4-larg:748px; --a4-alt:1077px; --a4-vermelho:#c8102e; --a4-cinza-cab:#7f7f7f; --a4-cinza-escuro:#404040; --a4-linha:#bfbfbf; }
+
+/* margem estreita: 6 mm em volta, a moldura fica perto da borda do papel (Fernando, 29/09/2026) */
+@page { size:A4 portrait; margin:6mm; }
+
+/* fora da prévia e da impressão, as folhas não aparecem */
+.a4-folhas { display:none; }
+
+/* ---- prévia na tela: fundo cinza, folhas brancas com a margem do papel em volta ---- */
+html.a4-previa { zoom:1 !important; }
+html.a4-previa body { background:#6f6f6f !important; border:0 !important; }
+html.a4-previa body > *:not(.a4-folhas):not(.a4-barra) { display:none !important; }
+html.a4-previa .a4-folhas { display:block; padding:70px 0 40px; }
+html.a4-previa .a4-folha { box-shadow:0 0 0 23px #ffffff, 0 0 0 24px #6f6f6f; margin:23px auto 66px; }
+.a4-barra { display:none; }
+html.a4-previa .a4-barra { display:flex; position:fixed; top:0; left:0; right:0; z-index:50; gap:10px; align-items:center;
+  padding:8px 16px; background:#1a1a1a; color:#ffffff; font:700 14px Arial, Helvetica, sans-serif; }
+.a4-barra span { flex:1; }
+
+/* botões do padrão (na tela, fora da prévia) */
+.a4-btn { border:1px solid #000000; background:var(--a4-vermelho); color:#ffffff; padding:7px 12px;
+  font:700 12px Arial, Helvetica, sans-serif; letter-spacing:.04em; cursor:pointer; white-space:nowrap; }
+.a4-btn:hover { background:#a50d26; }
+.a4-btn.a4-sec { background:#ffffff; color:#000000; }
+.a4-btn.a4-sec:hover { background:#eeeeee; }
+
+/* ---- a folha ---- */
+/* moldura: borda preta de 2px em volta da folha, com 6px de respiro por dentro (Fernando, 29/09/2026). O motor
+   desconta os 8px de cada lado (MOLDURA no a4.js): mudar aqui = mudar lá */
+.a4-folha { width:var(--a4-larg); height:var(--a4-alt); overflow:hidden; position:relative; box-sizing:border-box; border:2px solid #000000; padding:6px;
+  background:#ffffff; color:#000000; font:12px/1.3 Arial, Helvetica, sans-serif; display:flex; flex-direction:column; gap:8px; }
+.a4-folha * { box-sizing:border-box; }
+
+/* cabeçalho de cada folha: logo, título, carimbo e FOLHA x DE y */
+.a4-cab { display:flex; align-items:center; gap:12px; padding-bottom:6px; border-bottom:3px solid var(--a4-vermelho); flex:none; }
+.a4-cab img { width:112px; height:auto; display:block; }
+.a4-cab h1 { flex:1; margin:0; font:700 16px/1.15 Arial, Helvetica, sans-serif; text-transform:uppercase; }
+.a4-cab .a4-cab-dir { text-align:right; font-size:12px; font-weight:700; white-space:nowrap; }
+
+/* bloco: faixa cinza de título + conteúdo, sem quebrar entre folhas */
+.a4-bloco { border:1px solid #000000; flex:none; }
+/* cabeçalho do bloco: SEMPRE vermelho com letra branca (Fernando, 29/09/2026) */
+.a4-bloco-tit { display:flex; justify-content:space-between; gap:10px; align-items:baseline; background:var(--a4-vermelho); color:#ffffff;
+  border-bottom:1px solid #000000; padding:4px 8px; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.03em; }
+.a4-bloco-tit small { font-size:12px; font-weight:700; text-transform:none; letter-spacing:0; }
+.a4-bloco-corpo { padding:0; }
+
+/* indicadores: 3 por linha */
+.a4-kpis { display:grid; grid-template-columns:repeat(3, 1fr); gap:6px; flex:none; }
+.a4-kpi { border:1px solid #000000; border-left:6px solid var(--c, #000000); padding:4px 8px; }
+.a4-kpi b { display:block; font-size:12px; color:var(--c, #000000); letter-spacing:.03em; }
+.a4-kpi span { display:block; font-size:18px; font-weight:700; }
+.a4-kpi small { display:block; font-size:12px; font-weight:700; }
+
+/* tabela: Arial Narrow 12px (o piso de 12px vale no papel), largura da folha, sem rolagem */
+/* Arial Narrow: o Chrome acha pelo nome, o Firefox só pela Arial com font-stretch condensado (conferido no Firefox 156) */
+table.a4-tab { width:100%; border-collapse:collapse; table-layout:fixed; font-family:'Arial Narrow', Arial, sans-serif; font-stretch:condensed;
+  font-size:12px; font-variant-numeric:tabular-nums; }
+.a4-tab th, .a4-tab td { border:1px solid var(--a4-linha); padding:2px 4px; text-align:right; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+/* cabeçalho da tabela: SEMPRE cinza escuro com letra branca (Fernando, 29/09/2026) */
+.a4-tab thead th { background:var(--a4-cinza-escuro); color:#ffffff; border-color:#000000; text-align:center; font-weight:700;
+  white-space:normal; line-height:1.15; vertical-align:middle; }   /* cabeçalho longo quebra em duas linhas, nunca corta */
+.a4-tab .a4-esq { text-align:left; }
+.a4-tab .a4-centro { text-align:center; }
+.a4-tab .a4-forte { font-weight:700; }
+.a4-tab tbody tr:nth-child(even) td, .a4-tab tbody tr:nth-child(even) th { background:#f4f4f4; }
+.a4-tab tfoot td, .a4-tab tfoot th { background:#d9d9d9; font-weight:700; border-top:2px solid #000000; }
+.a4-tab .a4-destaque { background:rgba(128, 128, 128, 0.22) !important; }
+.a4-tab thead th.a4-destaque { background:#1a1a1a !important; }
+.a4-tab .a4-continua { font-weight:700; text-align:left; background:#ffffff; border:0; padding-top:0; }
+
+/* gráfico em SVG desenhado na largura da folha */
+.a4-graf { display:block; width:100%; }
+.a4-graf text { font-family:'Arial Narrow', Arial, sans-serif; font-stretch:condensed; font-size:12px; font-weight:700; fill:#000000; }
+.a4-graf .a4-t-branco { fill:#ffffff; }
+.a4-graf .a4-t-sem { font-family:Arial, Helvetica, sans-serif; fill:#ffffff; }
+.a4-graf .a4-t-linha { paint-order:stroke; stroke:#ffffff; stroke-width:3px; }
+
+/* pizza + lista lado a lado */
+.a4-pizza { display:flex; align-items:center; justify-content:center; gap:28px; padding:8px; }
+.a4-pizza-lista { display:flex; flex-direction:column; gap:6px; font-size:12px; }
+.a4-pizza-lista div { display:grid; grid-template-columns:14px auto; column-gap:6px; }
+.a4-pizza-lista i { width:12px; height:12px; align-self:center; }
+.a4-pizza-lista b { font-weight:700; }
+.a4-pizza-lista span { grid-column:2; }
+.a4-nota { font-size:12px; font-weight:700; padding:4px 8px; }
+
+/* ---- impressão: só as folhas, cada uma numa página ---- */
+@media print {
+  html { zoom:1 !important; }
+  html, body { background:#ffffff !important; margin:0 !important; padding:0 !important; border:0 !important; min-height:0 !important; }
+  /* a prévia (e a tela em folha) pinta o fundo de cinza: no papel ele virava uma borda cinza em volta da folha */
+  html.a4-previa, html.a4-previa body { background:#ffffff !important; }
+  body > *:not(.a4-folhas) { display:none !important; }
+  .a4-folhas { display:block !important; padding:0 !important; }
+  /* centrada na largura impressa: se o navegador ou a impressora usar margem diferente da do @page, a sobra fica
+     dividida entre os dois lados, e não toda à direita (Fernando viu a borda direita maior, 29/09/2026) */
+  .a4-folha { margin:0 auto !important; box-shadow:none !important; break-after:page; page-break-after:always; }
+  .a4-folha:last-child { break-after:auto; page-break-after:auto; }
+  * { -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; }
+}

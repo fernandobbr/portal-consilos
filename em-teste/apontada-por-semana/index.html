@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Produção Apontada por Semana</title>
+<link rel="icon" href="assets/img/consilos-logo-c.png">
+<style>
+  /* Fontes do projeto producao-encerrada (referencia so leitura; sem elas, cai no sistema). */
+  @font-face { font-family:'Barlow'; font-weight:400; font-display:swap;
+    src:url("assets/fonts/barlow-400.woff2") format('woff2'); }
+  @font-face { font-family:'Barlow'; font-weight:600; font-display:swap;
+    src:url("assets/fonts/barlow-600.woff2") format('woff2'); }
+  @font-face { font-family:'Barlow Condensed'; font-weight:500; font-display:swap;
+    src:url("assets/fonts/barlow-condensed-500.woff2") format('woff2'); }
+  @font-face { font-family:'Barlow Condensed'; font-weight:600; font-display:swap;
+    src:url("assets/fonts/barlow-condensed-600.woff2") format('woff2'); }
+  @font-face { font-family:'Barlow Condensed'; font-weight:700; font-display:swap;
+    src:url("assets/fonts/barlow-condensed-700.woff2") format('woff2'); }
+  @font-face { font-family:'Oswald'; font-weight:200 700; font-display:swap;
+    src:url("assets/fonts/oswald-variable.woff2") format('woff2'); }
+
+  :root {
+    --ink:#1A1A1A; --accent:#C8102E; --paper:#fff; --line:#D9D5CD;
+    --setor-0:#F6D3AD; --setor-1:#BDD7EE; --setor-2:#D5E8D4; --setor-3:#FFF2CC;
+    --setor-4:#E1D5E7; --setor-5:#CFEAE6; --setor-6:#F8CECC; --setor-7:#E0E0E0; --setor-8:#EDE3D2;
+    --tinta-num:#1F4E79;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:#F4F1EC; color:var(--ink);
+    font-family:'Barlow','Segoe UI',Arial,sans-serif; font-size:14px; }
+  .report { max-width:1920px; margin:0 auto; }
+
+  /* Cabeçalho padronizado com o projeto Produção Apontada */
+  header.head { background:var(--ink); color:#F4F1EC; padding:6px 16px; display:flex;
+    align-items:center; gap:14px; border-bottom:4px solid var(--accent); flex-wrap:wrap; margin-bottom:1px; }
+  header.head img { height:22px; width:auto; object-fit:contain; display:block;
+    filter:brightness(0) invert(1); flex:none; }
+  .head-title { flex:1; min-width:220px; }
+  .head-title h1 { margin:0; font-family:'Oswald','Barlow Condensed',sans-serif; font-weight:700;
+    font-size:22px; letter-spacing:.01em; text-transform:uppercase; color:#fff; }
+  .head-range { text-align:right; flex:none; color:#fff; }
+  .head-range .lbl { font-family:'Barlow Condensed',sans-serif; font-weight:500; font-size:12px;
+    letter-spacing:.08em; text-transform:uppercase; opacity:.85; }
+  .head-range .val { font-family:'Oswald','Barlow Condensed',sans-serif; font-weight:600;
+    font-size:14px; margin-top:2px; }
+  .head-range .per { font-family:'Barlow Condensed',sans-serif; font-weight:600; font-size:13px;
+    margin-top:1px; letter-spacing:.02em; }
+
+  .segmento { display:inline-flex; border:1px solid #fff; border-radius:5px; overflow:hidden; flex:none; }
+  .seg-btn { border:0; background:transparent; color:#fff; cursor:pointer;
+    font-family:'Barlow Condensed',sans-serif; font-weight:600; font-size:14px; letter-spacing:.06em;
+    text-transform:uppercase; padding:7px 15px; }
+  .seg-btn + .seg-btn { border-left:1px solid #fff; }
+  .seg-btn.ativo { background:var(--accent); color:#fff; }
+  .seg-btn:disabled { opacity:.4; cursor:not-allowed; }
+
+  .tabela-caixa { position:relative; overflow-x:auto; border:1px solid var(--ink); background:#fff; }
+  table.painel { border-collapse:separate; border-spacing:0; width:100%; }
+  table.painel th, table.painel td { border-right:1px solid #fff; border-bottom:1px solid #fff;
+    padding:2px 7px; white-space:nowrap; }
+
+  tr.faixa-titulo th { background:var(--accent); color:#fff; font-family:'Barlow Condensed',sans-serif;
+    font-weight:700; font-size:16px; letter-spacing:.03em; text-align:center; padding:6px 10px; text-transform:uppercase; }
+  tr.faixa-cab th { background:#6B6B6B; color:#fff; font-family:'Barlow Condensed',sans-serif;
+    font-weight:700; font-size:14px; letter-spacing:.04em; text-align:center; padding:4px 8px; }
+  tr.faixa-cab th .sub { display:block; font-weight:600; font-size:12px; letter-spacing:0; opacity:.95; }
+
+  th.c-setor, td.c-setor { position:sticky; left:0; z-index:8; width:150px; min-width:150px; }
+  th.c-centro, td.c-centro { position:sticky; left:150px; z-index:8; width:230px; min-width:230px; }
+  td.c-setor { font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:14px;
+    letter-spacing:.02em; text-align:center; vertical-align:middle; }
+  td.c-centro { font-weight:600; font-size:14px; text-align:left; }
+
+  td.num { text-align:center; font-size:14px; font-weight:600; color:var(--tinta-num); min-width:84px; }
+  td.num.zero { color:var(--tinta-num); }
+  td.c-tot { font-weight:700; color:var(--ink); background:#F2EEE6; }
+  th.c-tot { background:#4D4D4D; }
+  /* Expander da pintura: abre as sub-linhas FAB 01 / FAB 02, distintas por cor */
+  .pint-toggle { border:0; background:transparent; cursor:pointer; color:var(--ink);
+    font-size:12px; line-height:1; padding:0 2px; vertical-align:middle; }
+  td.pint-sub-lab { font-weight:700; padding-left:22px; }
+  table.painel tbody tr.pint-sub td { font-size:13px; }
+  table.painel tbody tr.pint-maq td { background:var(--setor-4); }   /* cor da pintura, como no painel original */
+
+  /* Consumido / Expedido como LINHAS abaixo do Total Geral */
+  table.painel tfoot tr.linha-consumido td { border-top:2px solid #000; }  /* separa do Total Geral */
+  table.painel tfoot tr.linha-consumido td { background:#D8C9A8; }
+  table.painel tfoot tr.linha-expedido td { background:#C3D9B8; }
+
+  tr.s0 { --fundo:var(--setor-0); } tr.s1 { --fundo:var(--setor-1); } tr.s2 { --fundo:var(--setor-2); }
+  tr.s3 { --fundo:var(--setor-3); } tr.s4 { --fundo:var(--setor-4); } tr.s5 { --fundo:var(--setor-5); }
+  tr.s6 { --fundo:var(--setor-6); } tr.s7 { --fundo:var(--setor-7); } tr.s8 { --fundo:var(--setor-8); }
+  table.painel tbody td { background:var(--fundo); }
+  table.painel tbody tr:hover td.num, table.painel tbody tr:hover td.c-centro { background:#C4C4C4; }
+
+  table.painel tfoot td { background:#8C8C8C; color:#000; font-weight:700; font-size:14px;
+    border-top:2px solid #fff; text-align:center; }
+  table.painel tfoot td.c-rot { font-family:'Barlow Condensed',sans-serif; letter-spacing:.04em;
+    text-transform:uppercase; position:sticky; left:0; z-index:8; }
+  table.painel tfoot td.tot-geral { background:#6B6B6B; }
+</style>
+</head>
+<body>
+<div class="report">
+  <header class="head">
+    <img src="assets/img/consilos-logo.png" alt="Consilos">
+    <div class="head-title"><h1>Produção Apontada por Semana · Fábrica 01</h1></div>
+    <div class="segmento" id="segMedida" role="group" aria-label="Medida do peso">
+      <button type="button" class="seg-btn ativo" data-medida="apontado">Peso apontado</button>
+      <button type="button" class="seg-btn" data-medida="processado">OP's encerradas</button>
+    </div>
+    <div class="segmento" id="segVisual" role="group" aria-label="Visualizar peso ou quantidade de itens">
+      <button type="button" class="seg-btn ativo" data-visual="peso">Peso (kg)</button>
+      <button type="button" class="seg-btn" data-visual="quantidade">Itens</button>
+    </div>
+    <div class="head-range">
+      <div class="lbl">Últimas 12 semanas ISO</div>
+      <div class="val" id="periodo">&hellip;</div>
+      <div class="per" id="gerado"></div>
+    </div>
+  </header>
+
+  <div class="tabela-caixa">
+    <table class="painel" id="tabela">
+      <thead id="cabeca"></thead>
+      <tbody id="corpo"></tbody>
+      <tfoot id="rodape"></tfoot>
+    </table>
+  </div>
+</div>
+
+<script src="dados/dados-semanas.js"></script>
+<script id="dadosQuantidades">window.DADOS_QUANTIDADES = {"gerado":"15/10/2026 08:55:06","apontado":{"setores":[{"setor":"ESTAMPARIA DE CHAPA","centros":[{"centro":"F1 - LINHA FURAÇÃO AUTOMÁTICA","porSemana":{"202631":58503,"202632":5370,"202633":112412,"202634":1688,"202635":1082,"202636":6921,"202637":11452,"202638":4131,"202639":54594,"202640":5060,"202641":14748,"202642":1684},"total":277645},{"centro":"F1-CORTE TERMICO","porSemana":{"202631":25520,"202632":29322,"202633":30405,"202634":29460,"202635":32785,"202636":31157,"202637":29618,"202638":28217,"202639":27052,"202640":27386,"202641":22183,"202642":9797},"total":322902},{"centro":"F1-GUILHOTINA","porSemana":{"202631":3384,"202632":28340,"202633":2333,"202634":3368,"202635":3726,"202636":2299,"202637":2352,"202638":6890,"202639":14610,"202640":5702,"202641":6470,"202642":1901},"total":81375},{"centro":"F1-PRENSA DE DOBRA","porSemana":{"202631":15573,"202632":17155,"202633":18345,"202634":19882,"202635":23763,"202636":20555,"202637":18576,"202638":23538,"202639":23446,"202640":22507,"202641":23770,"202642":8403},"total":235513},{"centro":"F1-PRENSA HIDRÁULICA (PH08)","porSemana":{"202631":254,"202632":748,"202634":501,"202635":227,"202637":1088,"202638":424,"202639":701,"202640":1067,"202641":586,"202642":162},"total":5758},{"centro":"F1-PUNCIONADEIRA","porSemana":{"202631":2009,"202632":1109,"202633":1698,"202634":2209,"202635":1585,"202636":1276,"202637":1494,"202638":2498,"202639":1418,"202640":2559,"202641":3680,"202642":1446},"total":22981}]},{"setor":"ESTAMPARIA DE PERFIL","centros":[{"centro":"F1 - CÉLULA METALEIRA","porSemana":{"202631":1477,"202632":1832,"202633":3424,"202634":2301,"202635":1617,"202636":1964,"202637":2579,"202638":1522,"202639":2570,"202640":1961,"202641":3029,"202642":377},"total":24653},{"centro":"F1-CALANDRAS","porSemana":{"202631":1893,"202632":4931,"202633":5612,"202634":1486,"202635":2847,"202636":2135,"202637":1589,"202638":3978,"202639":2709,"202640":1706,"202641":4350,"202642":905},"total":34141},{"centro":"F1-PRENSA HIDRÁULICA","porSemana":{"202631":8872,"202632":40709,"202633":21995,"202634":11162,"202635":15971,"202636":13091,"202637":12860,"202638":15027,"202639":16514,"202640":22329,"202641":4795,"202642":6491},"total":189816},{"centro":"F1-SERRAS FITAS","porSemana":{"202631":3290,"202632":3250,"202633":4879,"202634":3720,"202635":3681,"202636":3924,"202637":3392,"202638":3329,"202639":5214,"202640":3945,"202641":4871,"202642":1755},"total":45250}]},{"setor":"USINAGEM","centros":[{"centro":"F1-USINAGEM FRESA","porSemana":{"202631":225,"202632":567,"202633":248,"202634":356,"202635":251,"202636":247,"202637":257,"202638":703,"202639":337,"202640":331,"202641":322,"202642":190},"total":4034},{"centro":"F1-USINAGEM TORNO","porSemana":{"202631":457,"202632":461,"202633":411,"202634":467,"202635":439,"202636":596,"202637":180,"202638":559,"202639":833,"202640":715,"202641":485,"202642":322},"total":5925}]},{"setor":"LINHA DE SOLDA","centros":[{"centro":"F1 - CÉLULA ROBO DE SOLDA","porSemana":{"202631":718,"202632":792,"202633":389,"202634":477,"202635":403,"202636":478,"202637":400,"202638":964,"202639":1061,"202640":789,"202641":855,"202642":535},"total":7861},{"centro":"F1 - SOLDA GERAL","porSemana":{"202631":1643,"202632":2222,"202633":3029,"202634":3020,"202635":2921,"202636":2818,"202637":1840,"202638":3114,"202639":3233,"202640":3857,"202641":2386,"202642":1305},"total":31388}]},{"setor":"LINHA DE PINTURA","centros":[{"centro":"F1-PINTURA PÓ","porSemana":{"202631":9742,"202632":10181,"202633":8839,"202634":9249,"202635":10864,"202636":10507,"202637":5267,"202638":7081,"202639":14995,"202640":13461,"202641":14825,"202642":2029},"total":117040}]},{"setor":"LINHA DE MONTAGEM","centros":[{"centro":"F1 - EXPANSORA DE TUBO","porSemana":{"202631":17,"202632":35,"202633":38,"202634":9,"202635":43,"202636":1,"202637":8,"202638":1,"202639":33,"202640":83},"total":268},{"centro":"F1 - MONTAGEM TRANSPORTADORES","porSemana":{"202631":271,"202632":331,"202633":836,"202634":1155,"202635":404,"202636":366,"202637":140,"202638":721,"202639":302,"202640":203,"202641":566,"202642":101},"total":5396},{"centro":"F1 - ROLOS","porSemana":{"202631":10,"202632":13,"202633":17,"202634":18,"202635":19,"202636":1,"202637":8,"202638":9,"202639":22,"202640":18,"202641":11},"total":146},{"centro":"F1 - ROUTER","porSemana":{"202631":415,"202632":1463,"202633":3342,"202634":1989,"202635":2801,"202636":2652,"202637":1677,"202638":940,"202639":1638,"202640":3562,"202641":1615,"202642":52},"total":22146},{"centro":"F1- MONTAGEM DUTOS DE ELEVADOR","porSemana":{"202631":127,"202632":104,"202633":155,"202634":183,"202635":148,"202636":72,"202637":77,"202638":201,"202639":165,"202640":306,"202641":242,"202642":83},"total":1863},{"centro":"F1-MONTAGEM ACESSORIOS","porSemana":{"202631":268,"202632":487,"202633":418,"202634":547,"202635":396,"202636":187,"202637":584,"202638":759,"202639":688,"202640":508,"202641":790,"202642":278},"total":5910},{"centro":"F1-MONTAGEM ELEVADORES","porSemana":{"202631":28,"202632":43,"202633":59,"202634":100,"202635":44,"202636":86,"202637":54,"202638":68,"202639":56,"202640":112,"202641":89,"202642":14},"total":753},{"centro":"F1-MONTAGEM FORNALHA / SECADOR","porSemana":{"202631":220,"202632":204,"202633":85,"202634":226,"202635":160,"202636":168,"202637":226,"202638":444,"202639":207,"202640":271,"202641":187,"202642":212},"total":2610},{"centro":"F1-MONTAGEM MAQUINA DE LIMPEZA","porSemana":{"202631":608,"202632":9,"202633":45,"202634":125,"202635":162,"202636":156,"202637":146,"202638":69,"202639":166,"202640":173,"202641":32,"202642":17},"total":1708}]},{"setor":"TERCEIRIZAÇÃO","centros":[{"centro":"TERCEIRIZACAO","porSemana":{"202631":1608,"202632":2692,"202633":5488,"202634":4221,"202635":2521,"202636":4508,"202637":3278,"202638":3616,"202639":4578,"202640":5016,"202641":2650,"202642":1395},"total":41571}]},{"setor":"FÁBRICA 2","centros":[{"centro":"F2-FÁBRICA 2","porSemana":{"202631":3054,"202632":9519,"202633":4499,"202634":2765,"202635":1220,"202636":4429,"202637":2712,"202638":5117,"202639":1581,"202640":1915,"202641":8098,"202642":1482},"total":46391}]},{"setor":"OUTROS","centros":[{"centro":"F1- AUTOMACAO","porSemana":{"202631":6,"202632":13,"202633":12,"202634":11,"202635":16,"202636":16,"202637":20,"202638":14,"202639":14,"202640":23,"202641":11,"202642":3},"total":159},{"centro":"F1-ALMOXARIFADO","porSemana":{"202631":4,"202632":6,"202634":11,"202635":18,"202636":3,"202637":26,"202638":2,"202639":2,"202640":1,"202641":15},"total":88},{"centro":"F1-FERRAMENTARIA","porSemana":{"202631":64,"202632":6,"202633":277,"202634":59,"202635":40,"202636":5,"202637":105,"202638":39,"202639":5,"202640":22,"202641":6,"202642":1},"total":629}]}],"totalPorSemana":{"202631":140260,"202632":161914,"202633":229290,"202634":100765,"202635":110154,"202636":110618,"202637":102005,"202638":113975,"202639":178744,"202640":125588,"202641":121667,"202642":40940},"totalGeral":1535920,"consumidoPorSemana":{"202631":58332,"202632":60132,"202633":63211,"202634":51031,"202635":46109,"202636":59508,"202637":63874,"202638":70393,"202639":65158,"202640":58640,"202641":70006,"202642":23572},"expedidoPorSemana":{"202631":81928,"202632":101782,"202633":166079,"202634":49734,"202635":64045,"202636":51110,"202637":38131,"202638":43582,"202639":113586,"202640":66948,"202641":51661,"202642":17368},"totalConsumido":689966,"totalExpedido":845954,"pinturaMaquinas":[{"maquina":"PEPA","porSemana":{"202631":6082,"202632":4878,"202633":3268,"202634":3466,"202635":5789,"202636":3627,"202637":1254,"202638":720,"202639":8655,"202640":7761,"202641":8463,"202642":148},"total":54111},{"maquina":"PEPB","porSemana":{"202631":241,"202632":440,"202633":345,"202634":201,"202635":620,"202636":595,"202637":528,"202638":542,"202639":19,"202640":427,"202641":355,"202642":155},"total":4468},{"maquina":"PEPP","porSemana":{"202631":1900,"202632":1905,"202633":3387,"202634":2936,"202635":2980,"202636":4028,"202637":1747,"202638":4015,"202639":2314,"202640":2142,"202641":2744,"202642":542},"total":30640},{"maquina":"PEPC","porSemana":{"202631":1041,"202632":2495,"202633":1478,"202634":2016,"202635":617,"202636":1450,"202637":1405,"202638":1088,"202639":3371,"202640":2896,"202641":2301,"202642":752},"total":20910},{"maquina":"PEPV","porSemana":{"202631":377,"202632":414,"202633":340,"202634":527,"202635":807,"202636":664,"202637":274,"202638":689,"202639":530,"202640":230,"202641":894,"202642":379},"total":6125},{"maquina":"MOAPT","porSemana":{"202631":101,"202632":49,"202633":21,"202634":102,"202635":51,"202636":143,"202637":59,"202638":27,"202639":105,"202640":5,"202641":62,"202642":53},"total":778},{"maquina":"PEPAZ","porSemana":{"202634":1,"202639":1},"total":2},{"maquina":"PEPC2","porSemana":{"202632":4,"202633":8,"202634":9,"202637":8,"202638":339,"202639":391,"202641":8},"total":767},{"maquina":"MOAPT2","porSemana":{"202641":12},"total":12},{"maquina":"PEPAUT","porSemana":{"202641":6},"total":6}]},"processado":{"setores":[{"setor":"ESTAMPARIA DE CHAPA","centros":[{"centro":"F1 - LINHA FURAÇÃO AUTOMÁTICA","porSemana":{"202631":61838,"202632":5370,"202633":112412,"202634":1688,"202635":1082,"202636":4999,"202637":9482,"202638":4631,"202639":54594,"202640":5060,"202641":14236,"202642":1684},"total":277076},{"centro":"F1-CORTE TERMICO","porSemana":{"202631":8650,"202632":11713,"202633":10640,"202634":8022,"202635":9393,"202636":10764,"202637":9703,"202638":10823,"202639":7939,"202640":9691,"202641":8313,"202642":4219},"total":109870},{"centro":"F1-GUILHOTINA","porSemana":{"202631":485,"202632":230,"202633":139,"202634":61,"202635":129,"202636":231,"202637":163,"202638":176,"202639":36,"202640":397,"202641":485,"202642":60},"total":2592},{"centro":"F1-PRENSA DE DOBRA","porSemana":{"202631":12354,"202632":12019,"202633":14207,"202634":16910,"202635":19140,"202636":15991,"202637":11996,"202638":19385,"202639":17728,"202640":20051,"202641":20312,"202642":6943},"total":187036},{"centro":"F1-PRENSA HIDRÁULICA (PH08)","porSemana":{"202637":572},"total":572},{"centro":"F1-PUNCIONADEIRA","porSemana":{"202631":302,"202632":391,"202633":66,"202634":90,"202635":256,"202636":187,"202637":217,"202638":517,"202639":362,"202640":242,"202641":121,"202642":348},"total":3099}]},{"setor":"ESTAMPARIA DE PERFIL","centros":[{"centro":"F1 - CÉLULA METALEIRA","porSemana":{"202632":224,"202634":448,"202635":16,"202636":296,"202637":8,"202638":46,"202639":530,"202640":46,"202641":224,"202642":10},"total":1848},{"centro":"F1-CALANDRAS","porSemana":{"202631":2184,"202632":4510,"202633":5311,"202634":1042,"202635":2666,"202636":1877,"202637":1512,"202638":3735,"202639":2423,"202640":1638,"202641":3372,"202642":726},"total":30996},{"centro":"F1-PRENSA HIDRÁULICA","porSemana":{"202631":6454,"202632":29408,"202633":16979,"202634":9570,"202635":10207,"202636":10983,"202637":10013,"202638":13618,"202639":11065,"202640":19068,"202641":2976,"202642":3127},"total":143468},{"centro":"F1-SERRAS FITAS","porSemana":{"202631":1620,"202632":1213,"202633":2102,"202634":2057,"202635":1808,"202636":1611,"202637":1556,"202638":1334,"202639":860,"202640":1501,"202641":2000,"202642":626},"total":18288}]},{"setor":"USINAGEM","centros":[{"centro":"F1-USINAGEM FRESA","porSemana":{"202631":178,"202632":413,"202633":75,"202634":287,"202635":155,"202636":161,"202637":223,"202638":446,"202639":203,"202640":244,"202641":248,"202642":167},"total":2800},{"centro":"F1-USINAGEM TORNO","porSemana":{"202631":387,"202632":386,"202633":406,"202634":315,"202635":375,"202636":547,"202637":159,"202638":447,"202639":600,"202640":610,"202641":347,"202642":269},"total":4848}]},{"setor":"LINHA DE SOLDA","centros":[{"centro":"F1 - CÉLULA ROBO DE SOLDA","porSemana":{"202631":50,"202632":200,"202634":100,"202635":50,"202638":170,"202639":170,"202640":120,"202641":56,"202642":50},"total":966},{"centro":"F1 - SOLDA GERAL","porSemana":{"202631":131,"202632":139,"202633":183,"202634":257,"202635":95,"202636":69,"202637":20,"202638":159,"202639":201,"202640":351,"202641":224,"202642":179},"total":2008}]},{"setor":"LINHA DE PINTURA","centros":[{"centro":"F1-PINTURA PÓ","porSemana":{"202631":7148,"202632":7446,"202633":8222,"202634":7091,"202635":6318,"202636":6670,"202637":5302,"202638":6067,"202639":11106,"202640":9059,"202641":11149,"202642":1817},"total":87395}]},{"setor":"LINHA DE MONTAGEM","centros":[{"centro":"F1 - EXPANSORA DE TUBO","porSemana":{"202631":17,"202632":35,"202633":38,"202634":9,"202635":43,"202636":1,"202637":8,"202638":1,"202639":33,"202640":83},"total":268},{"centro":"F1 - MONTAGEM TRANSPORTADORES","porSemana":{"202631":271,"202632":331,"202633":836,"202634":1059,"202635":499,"202636":366,"202637":140,"202638":721,"202639":302,"202640":203,"202641":560,"202642":101},"total":5389},{"centro":"F1 - ROLOS","porSemana":{"202631":10,"202632":12,"202633":17,"202634":19,"202635":15,"202636":5,"202637":8,"202638":9,"202639":22,"202640":18,"202641":11},"total":146},{"centro":"F1 - ROUTER","porSemana":{"202631":413,"202632":1266,"202633":3374,"202634":1906,"202635":2767,"202636":2318,"202637":1641,"202638":502,"202639":1745,"202640":3581,"202641":1636,"202642":52},"total":21201},{"centro":"F1- MONTAGEM DUTOS DE ELEVADOR","porSemana":{"202631":127,"202632":104,"202633":155,"202634":183,"202635":148,"202636":72,"202637":74,"202638":201,"202639":165,"202640":302,"202641":238,"202642":83},"total":1852},{"centro":"F1-MONTAGEM ACESSORIOS","porSemana":{"202631":268,"202632":487,"202633":418,"202634":546,"202635":396,"202636":187,"202637":581,"202638":759,"202639":680,"202640":510,"202641":790,"202642":276},"total":5898},{"centro":"F1-MONTAGEM ELEVADORES","porSemana":{"202631":28,"202632":43,"202633":59,"202634":99,"202635":45,"202636":86,"202637":46,"202638":68,"202639":56,"202640":112,"202641":89,"202642":14},"total":745},{"centro":"F1-MONTAGEM FORNALHA / SECADOR","porSemana":{"202631":220,"202632":202,"202633":84,"202634":226,"202635":158,"202636":167,"202637":224,"202638":444,"202639":205,"202640":272,"202641":187,"202642":212},"total":2601},{"centro":"F1-MONTAGEM MAQUINA DE LIMPEZA","porSemana":{"202631":607,"202632":8,"202633":39,"202634":96,"202635":162,"202636":155,"202637":127,"202638":61,"202639":128,"202640":170,"202641":26,"202642":17},"total":1596}]},{"setor":"TERCEIRIZAÇÃO","centros":[{"centro":"TERCEIRIZACAO","porSemana":{"202631":108905,"202632":14684,"202633":56196,"202634":4116,"202635":33682,"202636":18020,"202637":65746,"202638":189655,"202639":171447,"202640":64752,"202641":63326,"202642":1231},"total":791760}]},{"setor":"FÁBRICA 2","centros":[{"centro":"F2-FÁBRICA 2","porSemana":{"202631":1491,"202632":8685,"202633":1965,"202634":1497,"202635":681,"202636":1485,"202637":1697,"202638":2949,"202639":698,"202640":1162,"202641":1386,"202642":763},"total":24459}]},{"setor":"OUTROS","centros":[{"centro":"F1- AUTOMACAO","porSemana":{"202631":3,"202632":6,"202633":8,"202634":5,"202635":11,"202636":12,"202637":16,"202638":8,"202639":11,"202640":16,"202641":5,"202642":4},"total":105},{"centro":"F1-ALMOXARIFADO","porSemana":{"202631":4,"202632":6,"202634":11,"202635":18,"202636":3,"202637":26,"202638":2,"202639":2,"202640":1,"202641":15},"total":88},{"centro":"F1-FERRAMENTARIA","porSemana":{"202631":18,"202632":6,"202633":164,"202634":59,"202635":30,"202637":89,"202638":39,"202639":3,"202640":22,"202641":2,"202642":1},"total":433}]}],"totalPorSemana":{"202631":214163,"202632":99537,"202633":234095,"202634":57769,"202635":90345,"202636":77263,"202637":121349,"202638":256973,"202639":283314,"202640":139282,"202641":132334,"202642":22979},"totalGeral":1729403,"consumidoPorSemana":{"202631":148771,"202632":49935,"202633":93599,"202634":29724,"202635":57458,"202636":49436,"202637":103221,"202638":228001,"202639":205104,"202640":97532,"202641":107424,"202642":14862},"expedidoPorSemana":{"202631":65392,"202632":49602,"202633":140496,"202634":28045,"202635":32887,"202636":27827,"202637":18128,"202638":28972,"202639":78210,"202640":41750,"202641":24910,"202642":8117},"totalConsumido":1185067,"totalExpedido":544336,"pinturaMaquinas":[{"maquina":"PEPA","porSemana":{"202631":3716,"202632":2516,"202633":3153,"202634":1869,"202635":1766,"202636":1058,"202637":1721,"202638":658,"202639":5143,"202640":3828,"202641":5015,"202642":147},"total":30590},{"maquina":"PEPB","porSemana":{"202631":241,"202632":438,"202633":343,"202634":198,"202635":617,"202636":593,"202637":525,"202638":540,"202639":19,"202640":427,"202641":352,"202642":153},"total":4446},{"maquina":"PEPP","porSemana":{"202631":1688,"202632":1575,"202633":2945,"202634":2619,"202635":2418,"202636":2772,"202637":1452,"202638":3108,"202639":2012,"202640":1706,"202641":2542,"202642":401},"total":25238},{"maquina":"PEPC","porSemana":{"202631":1041,"202632":2525,"202633":1467,"202634":1883,"202635":667,"202636":1447,"202637":1377,"202638":1081,"202639":3370,"202640":2870,"202641":2331,"202642":751},"total":20810},{"maquina":"PEPV","porSemana":{"202631":374,"202632":360,"202633":294,"202634":425,"202635":807,"202636":663,"202637":181,"202638":656,"202639":462,"202640":224,"202641":877,"202642":343},"total":5666},{"maquina":"MOAPT","porSemana":{"202631":88,"202632":32,"202633":20,"202634":96,"202635":43,"202636":137,"202637":46,"202638":24,"202639":99,"202640":4,"202641":32,"202642":22},"total":643},{"maquina":"PEPAZ","porSemana":{"202634":1,"202639":1},"total":2},{"maquina":"PEPC2","porSemana":{"202632":4,"202633":8,"202634":9,"202637":8,"202638":339,"202639":391,"202641":8},"total":767},{"maquina":"MOAPT2","porSemana":{"202641":12},"total":12}]}};</script>
+<script>
+(function () {
+  var D = window.DADOS_SEMANAS;
+  var Q = window.DADOS_QUANTIDADES;
+  var nfQtd = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 2 });
+  var nf0 = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 0 });
+  function el(tag, cls, txt) { var e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; }
+
+  var SETOR_ORDEM = ['ESTAMPARIA DE CHAPA','ESTAMPARIA DE PERFIL','USINAGEM','LINHA DE SOLDA',
+    'LINHA DE PINTURA','LINHA DE MONTAGEM','TERCEIRIZAÇÃO','FÁBRICA 2','OUTROS'];
+  function classeSetor(nome) { var i = SETOR_ORDEM.indexOf(nome); return 's' + (i < 0 ? 8 : i); }
+
+  var semanas = D.semanas;                 // [{ss,n,ini,fim}]
+  var ultima = semanas[semanas.length - 1];
+  document.getElementById('periodo').textContent = semanas[0].ini + ' a ' + ultima.fim;
+  document.getElementById('gerado').textContent = 'Semanas ' + semanas[0].n + ' a ' + ultima.n
+    + '/2026 · dados de ' + D.gerado;
+
+  // ── Cabeçalho (fixo: setor, centro, semanas, total) ──
+  var cab = document.getElementById('cabeca');
+  var trTit = el('tr', 'faixa-titulo');
+  var thTit = el('th', null, 'Produção Apontada por Centro de Trabalho — por Semana');
+  thTit.colSpan = 3 + semanas.length;   // setor, centro, semanas, total
+  trTit.append(thTit); cab.append(trTit);
+
+  var trCab = el('tr', 'faixa-cab');
+  trCab.append(el('th', 'c-setor', 'Setor'));
+  trCab.append(el('th', 'c-centro', 'Centro de Trabalho'));
+  semanas.forEach(function (s) {
+    var th = el('th');
+    th.append(document.createTextNode('SEM ' + s.n));
+    th.append(el('span', 'sub', s.ini + '–' + s.fim));
+    trCab.append(th);
+  });
+  trCab.append(el('th', 'c-tot', 'Total'));
+  cab.append(trCab);
+
+  var corpo = document.getElementById('corpo');
+  var rod = document.getElementById('rodape');
+  var estado = { medida: 'apontado', visual: 'peso', pintAberto: false };
+  function dadosAtuais() { return estado.visual === 'quantidade' ? Q : D; }
+  function numero(v) { return (estado.visual === 'quantidade' ? nfQtd : nf0).format(v); }
+
+  function ehPintura(setor, centro) { return setor === 'LINHA DE PINTURA' && /PINTURA/i.test(centro); }
+  // O centro da pintura numa medida (apontado/processado), para as sub-linhas.
+  function pinturaDe(medida) {
+    var M = dadosAtuais()[medida]; if (!M) return null;
+    var bloco = (M.setores || []).find(function (s) { return s.setor === 'LINHA DE PINTURA'; });
+    if (!bloco) return null;
+    return bloco.centros.find(function (c) { return /PINTURA/i.test(c.centro); }) || bloco.centros[0] || null;
+  }
+  // Linha de números (semanas + total) a partir de um objeto {porSemana,total}.
+  function celulasSemana(tr, obj) {
+    semanas.forEach(function (s) {
+      var v = obj ? (obj.porSemana[s.ss] || 0) : 0;
+      tr.append(el('td', 'num' + (v ? '' : ' zero'), v ? numero(v) : '·'));
+    });
+    tr.append(el('td', 'num c-tot', numero(obj ? obj.total : 0)));
+  }
+
+  // ── Desenha o corpo e o total para a medida escolhida ──
+  function desenhar() {
+    var medida = estado.medida;
+    var M = dadosAtuais()[medida];
+    thTit.textContent = estado.visual === 'quantidade'
+      ? 'Quantidade de Itens por Centro de Trabalho — por Semana'
+      : 'Produção Apontada por Centro de Trabalho — por Semana';
+    document.getElementById('gerado').textContent = 'Semanas ' + semanas[0].n + ' a ' + ultima.n
+      + '/2026 · dados de ' + dadosAtuais().gerado;
+    corpo.replaceChildren();
+    M.setores.forEach(function (bloco) {
+      bloco.centros.forEach(function (linha, idx) {
+        var tr = el('tr', classeSetor(bloco.setor));
+        var pint = ehPintura(bloco.setor, linha.centro);
+        var maqs = pint ? (M.pinturaMaquinas || []) : [];
+        if (idx === 0) {
+          var tdSetor = el('td', 'c-setor', bloco.setor);
+          // Pintura aberta: a célula do setor cobre a linha + uma sub-linha por máquina.
+          tdSetor.rowSpan = bloco.centros.length + (pint && estado.pintAberto ? maqs.length : 0);
+          tr.append(tdSetor);
+        }
+        var tdCentro = el('td', 'c-centro', linha.centro);
+        if (pint) {
+          var btn = el('button', 'pint-toggle', estado.pintAberto ? '▾' : '▶');
+          btn.type = 'button';
+          btn.title = 'Apontado × encerrado da pintura';
+          btn.setAttribute('aria-expanded', estado.pintAberto ? 'true' : 'false');
+          btn.addEventListener('click', function (ev) { ev.stopPropagation(); estado.pintAberto = !estado.pintAberto; desenhar(); });
+          tdCentro.append(document.createTextNode(' '), btn);
+        }
+        tr.append(tdCentro);
+        celulasSemana(tr, linha);
+        corpo.append(tr);
+        // Sub-linhas da pintura: uma por MÁQUINA (recurso), cada uma por cor — como no painel principal.
+        if (pint && estado.pintAberto) {
+          maqs.forEach(function (mq) {
+            var sub = el('tr', 'pint-sub pint-maq');
+            sub.append(el('td', 'c-centro pint-sub-lab', mq.maquina));
+            celulasSemana(sub, mq);
+            corpo.append(sub);
+          });
+        }
+      });
+    });
+    rod.replaceChildren();
+    // Linha do rodapé: rótulo (colspan 2) + um valor por semana + total. `classe` pinta a linha.
+    function linhaRodape(rotulo, porSemana, total, classe) {
+      var tr = el('tr', classe);
+      var tdRot = el('td', 'c-rot', rotulo);
+      tdRot.colSpan = 2;
+      tr.append(tdRot);
+      semanas.forEach(function (s) { tr.append(el('td', null, numero(porSemana[s.ss] || 0))); });
+      tr.append(el('td', 'tot-geral', numero(total)));
+      return tr;
+    }
+    rod.append(linhaRodape('Total Geral', M.totalPorSemana, M.totalGeral, 'linha-total'));
+    rod.append(linhaRodape('Consumido', M.consumidoPorSemana, M.totalConsumido, 'linha-consumido'));
+    rod.append(linhaRodape('Expedido', M.expedidoPorSemana, M.totalExpedido, 'linha-expedido'));
+  }
+
+  // ── Botão apontado × processado ──
+  var seg = document.getElementById('segMedida');
+  if (!D.temProcessado) {
+    seg.querySelector('[data-medida="processado"]').disabled = true;
+    seg.querySelector('[data-medida="processado"]').title = 'Sem o dado de processado nesta geração';
+  }
+  seg.addEventListener('click', function (ev) {
+    var btn = ev.target.closest('.seg-btn');
+    if (!btn || btn.disabled) return;
+    seg.querySelectorAll('.seg-btn').forEach(function (b) { b.classList.toggle('ativo', b === btn); });
+    estado.medida = btn.dataset.medida;
+    desenhar();
+  });
+
+  var segVisual = document.getElementById('segVisual');
+  if (!Q) {
+    segVisual.querySelector('[data-visual="quantidade"]').disabled = true;
+    segVisual.querySelector('[data-visual="quantidade"]').title = 'Dados de itens indisponíveis';
+  }
+  segVisual.addEventListener('click', function (ev) {
+    var btn = ev.target.closest('.seg-btn');
+    if (!btn || btn.disabled) return;
+    segVisual.querySelectorAll('.seg-btn').forEach(function (b) { b.classList.toggle('ativo', b === btn); });
+    estado.visual = btn.dataset.visual;
+    seg.querySelector('[data-medida="apontado"]').textContent = estado.visual === 'quantidade' ? 'Itens apontados' : 'Peso apontado';
+    desenhar();
+  });
+
+  desenhar();
+})();
+</script>
+</body>
+</html>
